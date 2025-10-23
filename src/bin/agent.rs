@@ -1,0 +1,59 @@
+use std::{
+    io::{Error, Result},
+    net::Ipv6Addr,
+};
+
+use clap::Parser;
+use color_print::ceprintln;
+use metricrs::global::set_global_registry;
+use metricrs_protobuf::registry::ProtoBufRegistry;
+use o3::{
+    agent::Agent,
+    cli::{Cli, Commands},
+    metrics::MetricsPrint,
+};
+use zrquic::quiche;
+
+#[tokio::main(flavor = "multi_thread")]
+async fn main() {
+    let cli = Cli::parse();
+
+    if let Err(err) = run(cli).await {
+        ceprintln!("<s><r>error:</r></s> {}", err)
+    }
+}
+
+async fn run(cli: Cli) -> Result<()> {
+    if cli.debug {
+        pretty_env_logger::try_init_timed().map_err(Error::other)?;
+    }
+
+    if let Some(laddr) = cli.metrics {
+        let registry = ProtoBufRegistry::bind(laddr)?;
+        let laddr = registry.local_addr();
+        set_global_registry(registry).unwrap();
+
+        let mut fetch = MetricsPrint::connect(laddr)?;
+
+        std::thread::spawn(move || {
+            if let Err(err) = fetch.run() {
+                log::error!("background metrics worker is stopped, {}", err);
+            }
+        });
+    }
+
+    #[allow(irrefutable_let_patterns)]
+    if let Commands::Listen { on } = cli.commands {
+        let on = on.unwrap_or_else(|| (Ipv6Addr::UNSPECIFIED, 0).into());
+
+        let mut config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
+
+        cli.quiche_config(&mut config)?;
+
+        let agent = Agent::new(on, cli.parse_o3_server_addrs()?, config).await?;
+
+        agent.run().await?;
+    }
+
+    Ok(())
+}

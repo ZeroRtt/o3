@@ -1,0 +1,60 @@
+[package]
+description = "A tunnel protocol, passes tcp traffic through quic tunnel."
+documentation = "https://docs.rs/o3"
+edition = "2024"
+license = "MIT"
+name = "o3"
+repository = "https://github.com/ZeroRtt/o3"
+version = "0.1.15"
+
+[dependencies]
+thiserror = { version = "^2.0" }
+log = { version = "^0.4" }
+zrquic = { version = "^0.1", path = "../quic" }
+color-print = { version = "0.3.7", optional = true }
+tokio = { version = "1.47.1", optional = true }
+parking_lot = "0.12.4"
+rand = { version = "0.9.2", optional = true }
+metricrs = { version = "^0.1" }
+metricrs-protobuf = { version = "^0.1" , default-features = false,  optional = true }
+pin-project = "1.1.10"
+
+# for cli programs.
+clap = { version = "=4.5.41", features = ["derive"], optional = true }
+pretty_env_logger = { version = "0.5.0", optional = true }
+
+[features]
+default = ["o3", "agent", "cli"]
+o3 = [
+    "tokio/rt",
+    "tokio/rt-multi-thread",
+    "tokio/net",
+    "tokio/io-util",
+    "rand"
+]
+agent = [
+    "tokio/rt",
+    "tokio/rt-multi-thread",
+    "tokio/net",
+    "tokio/io-util",
+    "rand"
+]
+cli = [
+    "clap",
+    "pretty_env_logger",
+    "color-print",
+    "tokio/macros",
+    "metricrs-protobuf/registry",
+    "metricrs-protobuf/fetch"
+]
+
+[[bin]]
+name = "o3-agent"
+path = "src/bin/agent.rs"
+required-features = ["agent", "cli"]
+
+
+[[bin]]
+name = "o3"
+path = "src/bin/o3.rs"
+required-features = ["o3", "cli"]
