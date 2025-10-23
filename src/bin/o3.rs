@@ -12,7 +12,7 @@ use o3::{
     metrics::MetricsPrint,
     redirect::Redirect,
 };
-use zrquic::{
+use zerortt::{
     poll::server::{Acceptor, SimpleAddressValidator},
     quiche,
 };

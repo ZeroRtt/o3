@@ -6,7 +6,7 @@ use std::{
 };
 
 use clap::{Parser, Subcommand};
-use zrquic::quiche;
+use zerortt::quiche;
 
 fn parse_port_range(arg: &str) -> std::result::Result<Range<u16>, String> {
     let parts = arg.split(":").collect::<Vec<_>>();

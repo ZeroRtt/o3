@@ -13,7 +13,7 @@ use tokio::{
     io::{AsyncWriteExt, copy},
     net::{TcpListener, TcpStream},
 };
-use zrquic::{
+use zerortt::{
     futures::{Group, QuicConn, QuicConnector, QuicStream},
     poll::{StreamKind, Token},
     quiche,
@@ -153,11 +153,11 @@ impl PoolConnector {
                 }
             }
 
-            _ = write.shutdown();
-
             if let Some(gauge) = GAUGE_FORWARD.as_ref() {
                 gauge.decrement(1.0);
             }
+
+            _ = owrite.as_ref().shutdown().await;
         });
 
         tokio::spawn(async move {
@@ -191,11 +191,11 @@ impl PoolConnector {
                 }
             }
 
-            _ = iwrite.shutdown();
-
             if let Some(gauge) = GAUGE_BACKWARD.as_ref() {
                 gauge.decrement(1.0);
             }
+
+            _ = iwrite.shutdown().await;
         });
 
         Ok(())

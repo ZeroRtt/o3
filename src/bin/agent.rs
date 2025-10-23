@@ -12,7 +12,7 @@ use o3::{
     cli::{Cli, Commands},
     metrics::MetricsPrint,
 };
-use zrquic::quiche;
+use zerortt::quiche;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {

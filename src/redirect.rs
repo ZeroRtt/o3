@@ -7,7 +7,7 @@ use tokio::{
     io::{AsyncWriteExt, copy},
     net::TcpStream,
 };
-use zrquic::{
+use zerortt::{
     futures::{QuicConn, QuicListener, QuicStream},
     poll::server::Acceptor,
 };
@@ -134,7 +134,7 @@ impl Redirect {
                 gauge.decrement(1.0);
             }
 
-            _ = metrics_write.shutdown();
+            _ = metrics_write.shutdown().await;
         });
 
         tokio::spawn(async move {
@@ -173,7 +173,7 @@ impl Redirect {
                 gauge.decrement(1.0);
             }
 
-            _ = metrics_write.shutdown();
+            _ = metrics_write.shutdown().await;
         });
 
         Ok(())

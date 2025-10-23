@@ -10,7 +10,7 @@ version = "0.1.15"
 [dependencies]
 thiserror = { version = "^2.0" }
 log = { version = "^0.4" }
-zrquic = { version = "^0.1", path = "../quic" }
+zerortt = { version = "^0.1" }
 color-print = { version = "0.3.7", optional = true }
 tokio = { version = "1.47.1", optional = true }
 parking_lot = "0.12.4"
