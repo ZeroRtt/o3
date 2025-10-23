@@ -7,6 +7,7 @@ use std::{
     sync::Arc,
 };
 
+use metricrs::instrument;
 use parking_lot::{Mutex, RwLock};
 use rand::seq::SliceRandom;
 use tokio::{
@@ -70,7 +71,7 @@ impl Agent {
             let connector = self.connector.clone();
             // Handle incoming TCP streams
             tokio::spawn(async move {
-                log::info!("handle incoming, from={}", raddr);
+                log::trace!("handle incoming, from={}", raddr);
 
                 if let Err(err) = connector.handle_incoming_tcp_stream(stream, raddr).await {
                     log::error!("handle incoming, from={}, err={}", raddr, err);
@@ -94,6 +95,7 @@ struct PoolConnector {
 }
 
 impl PoolConnector {
+    #[instrument(kind = Gauge, name = "conns")]
     async fn handle_incoming_tcp_stream(
         self: Arc<Self>,
         input: TcpStream,
@@ -130,7 +132,7 @@ impl PoolConnector {
 
             let mut write = AsyncMetricWrite::new(
                 owrite.as_ref(),
-                "agent.forward",
+                "forward",
                 &[("id", &format!("{} => {}", raddr, owrite))],
             );
 
@@ -169,7 +171,7 @@ impl PoolConnector {
 
             let mut iwrite = AsyncMetricWrite::new(
                 iwrite,
-                "agent.backward",
+                "backward",
                 &[("id", &format!("{} => {}", oread, raddr))],
             );
             match copy(&mut oread.as_ref(), &mut iwrite).await {
@@ -230,7 +232,7 @@ impl PoolConnector {
                 let mut active_conns = self.active_conns.write();
 
                 for token in invalid_conns {
-                    log::info!("remove connection, {:?}", token);
+                    log::trace!("remove connection, {:?}", token);
                     active_conns.remove(&token);
                 }
             }

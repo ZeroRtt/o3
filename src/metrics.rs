@@ -1,12 +1,7 @@
 //! Metrics utilities for o3 projects.
 
 use std::{
-    collections::{BinaryHeap, HashMap},
-    io::Result,
-    net::SocketAddr,
-    task::Poll,
-    thread::sleep,
-    time::Duration,
+    collections::HashMap, io::Result, net::SocketAddr, task::Poll, thread::sleep, time::Duration,
 };
 
 use metricrs::{Counter, Token, global::get_global_registry};
@@ -79,21 +74,23 @@ pub struct MetricsPrint {
     fetch: Fetch,
     verson: u64,
     metadatas: HashMap<u64, Metadata>,
+    print_interval: Duration,
 }
 
 impl MetricsPrint {
-    pub fn connect(remote: SocketAddr) -> Result<Self> {
+    pub fn connect(remote: SocketAddr, print_interval: Duration) -> Result<Self> {
         Ok(Self {
             fetch: Fetch::connect(remote)?,
             verson: 0,
             metadatas: Default::default(),
+            print_interval,
         })
     }
 
     pub fn run(&mut self) -> Result<()> {
         loop {
             self.fetch_once()?;
-            sleep(Duration::from_secs(10));
+            sleep(self.print_interval);
         }
     }
 
@@ -115,43 +112,67 @@ impl MetricsPrint {
             }
         }
 
-        let mut metrics = BinaryHeap::new();
+        let mut pipelines_forward = None;
+        let mut pipelines_backward = None;
+        let mut conns = None;
+        let mut forwards = vec![];
+        let mut backwards = vec![];
 
         for value in query_result.values {
             if let Some(metadata) = self.metadatas.get(&value.hash) {
-                let labels = metadata
-                    .labels
-                    .iter()
-                    .map(|label| format!("{}={}", label.key, label.value))
-                    .collect::<Vec<_>>()
-                    .join(",");
+                match metadata.name.as_str() {
+                    "pipeline.forward" => {
+                        pipelines_forward = Some(f64::from_bits(value.value));
+                    }
+                    "forward" => {
+                        let labels = metadata
+                            .labels
+                            .iter()
+                            .map(|label| format!("{}={}", label.key, label.value))
+                            .collect::<Vec<_>>()
+                            .join(",");
 
-                match metadata.instrument.enum_value_or_default() {
-                    metricrs_protobuf::protos::memory::Instrument::COUNTER => {
-                        metrics.push(format!(
-                            "{}, {}, value={}",
-                            metadata.name, labels, value.value
-                        ));
+                        forwards.push(format!("{}, value={}", labels, value.value));
                     }
-                    _ => {
-                        metrics.push(format!(
-                            "{}, {}, value={}",
-                            metadata.name,
-                            labels,
-                            f64::from_bits(value.value)
-                        ));
+                    "pipeline.backward" => {
+                        pipelines_backward = Some(f64::from_bits(value.value));
                     }
-                };
-            } else {
-                metrics.push(format!(
-                    "UNKNOWN, hash={}, value={}",
-                    value.hash, value.value
-                ));
+                    "backward" => {
+                        let labels = metadata
+                            .labels
+                            .iter()
+                            .map(|label| format!("{}={}", label.key, label.value))
+                            .collect::<Vec<_>>()
+                            .join(",");
+
+                        backwards.push(format!("{}, value={}", labels, value.value));
+                    }
+                    "conns" => {
+                        conns = Some(f64::from_bits(value.value));
+                    }
+                    _ => {}
+                }
             }
         }
 
-        if !metrics.is_empty() {
-            log::info!(target: "metrics", "\n\t{}", metrics.into_vec().join("\n\t"));
+        log::info!(
+            target: "metrics",
+            "conns={}, pipeline.forward={}, pipeline.backward={}",
+            conns.unwrap_or(0.0),
+            pipelines_forward.unwrap_or(0.0),
+            pipelines_backward.unwrap_or(0.0)
+        );
+
+        log::info!(target: "metrics", "forward:");
+
+        for forward in forwards {
+            log::info!(target: "metrics", "{}",forward);
+        }
+
+        log::info!(target: "metrics", "backward:");
+
+        for backward in backwards {
+            log::info!(target: "metrics", "{}",backward);
         }
 
         Ok(())

@@ -36,7 +36,7 @@ async fn run(cli: Cli) -> Result<()> {
         let laddr = registry.local_addr();
         set_global_registry(registry).unwrap();
 
-        let mut fetch = MetricsPrint::connect(laddr)?;
+        let mut fetch = MetricsPrint::connect(laddr, cli.metrics_interval.into())?;
 
         std::thread::spawn(move || {
             if let Err(err) = fetch.run() {

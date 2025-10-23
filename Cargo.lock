@@ -314,7 +314,9 @@ checksum = "52051878f80a721bb68ebfbc930e07b65ba72f2da88968ea5c06fd6ca3d3a127"
 
 [[package]]
 name = "fixedbuf"
-version = "0.1.1"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ced3ff984f04b0c8148f07260f31d5bb2833d159736c06b65f81e7d00f6c3ce"
 
 [[package]]
 name = "foreign-types"
@@ -630,6 +632,7 @@ version = "0.1.15"
 dependencies = [
  "clap",
  "color-print",
+ "humantime",
  "log",
  "metricrs",
  "metricrs-protobuf",
@@ -1444,7 +1447,9 @@ dependencies = [
 
 [[package]]
 name = "zerortt"
-version = "0.1.7"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "062d3e9a57fecfa1ce3a31c63b7583440407f0055fdca6f98fcd48b92c518ad2"
 dependencies = [
  "boring",
  "crossbeam-utils",

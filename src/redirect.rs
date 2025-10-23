@@ -44,17 +44,17 @@ impl Redirect {
             // Handle incoming `QUIC` connection.
             tokio::spawn(async move {
                 let token = conn.token();
-                log::info!("incoming quic conn, token={:?}", token);
+                log::trace!("incoming quic conn, token={:?}", token);
                 if let Err(err) = Self::handle_quic_conn(conn, self.redirect_to).await {
                     log::error!("handle quic conn, token={:?}, err={}", token, err);
                 } else {
-                    log::info!("incoming quic conn, token={:?}, closed", token);
+                    log::trace!("incoming quic conn, token={:?}, closed", token);
                 }
             });
         }
     }
 
-    #[instrument(kind = Gauge, name = "pipelines")]
+    #[instrument(kind = Gauge, name = "conns")]
     async fn handle_quic_conn(conn: QuicConn, redirect_to: SocketAddr) -> Result<()> {
         loop {
             log::trace!("handle quic conn, token={:?}", conn.token());
@@ -107,7 +107,7 @@ impl Redirect {
 
             let mut metrics_write = AsyncMetricWrite::new(
                 tcp_stream_send,
-                "o3.forward",
+                "forward",
                 &[("id", &format!("{} => {}", quic_stream_read, redirect_to))],
             );
 
@@ -146,7 +146,7 @@ impl Redirect {
 
             let mut metrics_write = AsyncMetricWrite::new(
                 quic_stream_send.as_ref(),
-                "o3.backward",
+                "backward",
                 &[("id", &format!("{} => {}", redirect_to, quic_stream_send))],
             );
 
