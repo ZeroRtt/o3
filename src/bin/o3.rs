@@ -13,8 +13,7 @@ use o3::{
     redirect::Redirect,
 };
 use zerortt::{
-    poll::server::{Acceptor, SimpleAddressValidator},
-    quiche,
+    quiche, {Acceptor, SimpleAddressValidator},
 };
 
 #[tokio::main(flavor = "multi_thread")]

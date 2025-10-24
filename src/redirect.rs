@@ -8,8 +8,8 @@ use tokio::{
     net::TcpStream,
 };
 use zerortt::{
-    futures::{QuicConn, QuicListener, QuicStream},
-    poll::server::Acceptor,
+    Acceptor,
+    mio::futures::{QuicConn, QuicListener, QuicStream},
 };
 
 use crate::metrics::AsyncMetricWrite;

@@ -15,9 +15,8 @@ use tokio::{
     net::{TcpListener, TcpStream},
 };
 use zerortt::{
-    futures::{Group, QuicConn, QuicConnector, QuicStream},
-    poll::{StreamKind, Token},
-    quiche,
+    mio::futures::{Group, QuicConn, QuicConnector, QuicStream},
+    quiche, {StreamKind, Token},
 };
 
 use crate::metrics::AsyncMetricWrite;

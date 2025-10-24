@@ -117,6 +117,8 @@ impl MetricsPrint {
         let mut conns = None;
         let mut forwards = vec![];
         let mut backwards = vec![];
+        let mut quic_socket_send = vec![];
+        let mut quic_socket_recv = vec![];
 
         for value in query_result.values {
             if let Some(metadata) = self.metadatas.get(&value.hash) {
@@ -150,6 +152,26 @@ impl MetricsPrint {
                     "conns" => {
                         conns = Some(f64::from_bits(value.value));
                     }
+                    "quic.socket.send" => {
+                        let labels = metadata
+                            .labels
+                            .iter()
+                            .map(|label| format!("{}={}", label.key, label.value))
+                            .collect::<Vec<_>>()
+                            .join(",");
+
+                        quic_socket_send.push(format!("{}, value={}", labels, value.value));
+                    }
+                    "quic.socket.recv" => {
+                        let labels = metadata
+                            .labels
+                            .iter()
+                            .map(|label| format!("{}={}", label.key, label.value))
+                            .collect::<Vec<_>>()
+                            .join(",");
+
+                        quic_socket_recv.push(format!("{}, value={}", labels, value.value));
+                    }
                     _ => {}
                 }
             }
@@ -173,6 +195,18 @@ impl MetricsPrint {
 
         for backward in backwards {
             log::info!(target: "metrics", "{}",backward);
+        }
+
+        log::info!(target: "metrics", "socket send:");
+
+        for v in quic_socket_send {
+            log::info!(target: "metrics", "{}",v);
+        }
+
+        log::info!(target: "metrics", "socket recv:");
+
+        for v in quic_socket_recv {
+            log::info!(target: "metrics", "{}",v);
         }
 
         Ok(())
