@@ -14,6 +14,7 @@ use tokio::{
     io::{AsyncWriteExt, copy},
     net::{TcpListener, TcpStream},
 };
+use tokio_util::compat::FuturesAsyncWriteCompatExt;
 use zerortt::{
     mio::futures::{Group, QuicConn, QuicConnector, QuicStream},
     quiche, {StreamKind, Token},
@@ -130,7 +131,7 @@ impl PoolConnector {
             }
 
             let mut write = AsyncMetricWrite::new(
-                owrite.as_ref(),
+                owrite.as_ref().compat_write(),
                 "forward",
                 &[("id", &format!("{} => {}", raddr, owrite))],
             );
@@ -158,7 +159,7 @@ impl PoolConnector {
                 gauge.decrement(1.0);
             }
 
-            _ = owrite.as_ref().shutdown().await;
+            _ = write.shutdown().await;
         });
 
         tokio::spawn(async move {
@@ -173,7 +174,8 @@ impl PoolConnector {
                 "backward",
                 &[("id", &format!("{} => {}", oread, raddr))],
             );
-            match copy(&mut oread.as_ref(), &mut iwrite).await {
+
+            match copy(&mut oread.as_ref().compat_write(), &mut iwrite).await {
                 Ok(data) => {
                     log::trace!(
                         "pipeline is closed, from={}, to={}, len={}",

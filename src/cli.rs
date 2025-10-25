@@ -137,7 +137,7 @@ pub struct Cli {
     pub metrics: Option<SocketAddr>,
 
     ///Metrics print interval
-    #[arg(long, value_name = "INTERVAL", default_value = "10s")]
+    #[arg(long, value_name = "INTERVAL", default_value = "60s")]
     pub metrics_interval: humantime::Duration,
 
     #[command(subcommand)]

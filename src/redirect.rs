@@ -7,6 +7,7 @@ use tokio::{
     io::{AsyncWriteExt, copy},
     net::TcpStream,
 };
+use tokio_util::compat::FuturesAsyncWriteCompatExt;
 use zerortt::{
     Acceptor,
     mio::futures::{QuicConn, QuicListener, QuicStream},
@@ -111,7 +112,12 @@ impl Redirect {
                 &[("id", &format!("{} => {}", quic_stream_read, redirect_to))],
             );
 
-            match copy(&mut quic_stream_read.as_ref(), &mut metrics_write).await {
+            match copy(
+                &mut quic_stream_read.as_ref().compat_write(),
+                &mut metrics_write,
+            )
+            .await
+            {
                 Ok(data) => {
                     log::trace!(
                         "pipeline is closed, from={}, to={}, len={}",
@@ -145,7 +151,7 @@ impl Redirect {
             }
 
             let mut metrics_write = AsyncMetricWrite::new(
-                quic_stream_send.as_ref(),
+                quic_stream_send.as_ref().compat_write(),
                 "backward",
                 &[("id", &format!("{} => {}", redirect_to, quic_stream_send))],
             );

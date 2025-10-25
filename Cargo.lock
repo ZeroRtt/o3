@@ -297,7 +297,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -381,6 +381,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "futures-sink"
+version = "0.3.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e575fab7d1e0dcb8d0c7bcf9a63ee213816ab51902e6d244a95819acacf1d4f7"
 
 [[package]]
 name = "futures-task"
@@ -626,10 +632,11 @@ dependencies = [
 
 [[package]]
 name = "o3"
-version = "0.1.15"
+version = "0.1.16"
 dependencies = [
  "clap",
  "color-print",
+ "futures-io",
  "humantime",
  "log",
  "metricrs",
@@ -640,6 +647,7 @@ dependencies = [
  "rand",
  "thiserror 2.0.17",
  "tokio",
+ "tokio-util",
  "zerortt",
 ]
 
@@ -1014,7 +1022,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.11.0",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -1107,7 +1115,7 @@ dependencies = [
  "getrandom",
  "once_cell",
  "rustix 1.1.2",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -1186,6 +1194,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-util"
+version = "0.7.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14307c986784f72ef81c89db7d9e28d6ac26d16213b109ea501696195e6e3ce5"
+dependencies = [
+ "bytes",
+ "futures-core",
+ "futures-io",
+ "futures-sink",
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1246,7 +1268,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -1445,7 +1467,7 @@ dependencies = [
 
 [[package]]
 name = "zerortt"
-version = "0.1.19"
+version = "0.1.20"
 dependencies = [
  "zerortt-api",
  "zerortt-futures",
@@ -1455,7 +1477,7 @@ dependencies = [
 
 [[package]]
 name = "zerortt-api"
-version = "0.1.19"
+version = "0.1.20"
 dependencies = [
  "boring",
  "crossbeam-utils",
@@ -1466,20 +1488,19 @@ dependencies = [
 
 [[package]]
 name = "zerortt-futures"
-version = "0.1.19"
+version = "0.1.20"
 dependencies = [
  "futures-io",
  "futures-util",
  "log",
  "parking_lot",
- "tokio",
  "zerortt-api",
  "zerortt-poll",
 ]
 
 [[package]]
 name = "zerortt-mio"
-version = "0.1.19"
+version = "0.1.20"
 dependencies = [
  "crossbeam-utils",
  "fixedbuf",
@@ -1495,7 +1516,7 @@ dependencies = [
 
 [[package]]
 name = "zerortt-poll"
-version = "0.1.19"
+version = "0.1.20"
 dependencies = [
  "crossbeam-utils",
  "log",

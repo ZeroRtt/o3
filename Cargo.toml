@@ -5,7 +5,7 @@ edition = "2024"
 license = "MIT"
 name = "o3"
 repository = "https://github.com/ZeroRtt/o3"
-version = "0.1.15"
+version = "0.1.16"
 
 [dependencies]
 thiserror = { version = "^2.0" }
@@ -19,6 +19,8 @@ metricrs = { version = "^0.1" }
 metricrs-protobuf = { version = "^0.1" , default-features = false,  optional = true }
 pin-project = "1.1.10"
 humantime = { version = "2.3.0", optional = true }
+futures-io = { version="0.3.31" }
+tokio-util = { version = "0.7.16" ,features = ["compat"]}
 
 # for cli programs.
 clap = { version = "=4.5.41", features = ["derive"], optional = true }
