@@ -218,22 +218,27 @@ impl PoolConnector {
                 .collect::<Vec<_>>();
 
             for conn in active_conns {
-                match conn.open(StreamKind::Bidi, true).await {
-                    Ok(opened) => {
+                match conn.open_non_blocking(StreamKind::Bidi).await {
+                    Ok(Some(opened)) => {
                         stream = Some(opened);
                         break;
                     }
-                    Err(_) => {
+                    Ok(None) => {
+                        continue;
+                    }
+                    Err(err) => {
+                        log::error!("remove connection, token={:?}, err={}", conn.token(), err);
                         invalid_conns.push(conn.token());
                     }
                 }
             }
 
-            {
+            if !invalid_conns.is_empty() {
                 let mut active_conns = self.active_conns.write();
 
                 for token in invalid_conns {
                     log::trace!("remove connection, {:?}", token);
+
                     active_conns.remove(&token);
                 }
             }
@@ -245,6 +250,11 @@ impl PoolConnector {
 
             let mut remote_server_addrs = self.remote_server_addrs.clone();
             remote_server_addrs.shuffle(&mut rand::rng());
+
+            log::info!(
+                "create new `QUIC` connection, raddr={}",
+                remote_server_addrs[0]
+            );
 
             let conn = self.clone().connector.create(
                 None,
